@@ -1,6 +1,17 @@
 require 'rspec'
 require 'houst/core'
 
+class Symlinker
+
+  def initialize
+    @config_folder = "#{File.expand_path("~")}/.houst"
+  end
+
+  def create_config_folder
+    Dir.mkdir @config_folder unless File.exists? @config_folder
+  end
+end
+
 describe 'Houst' do
 
   let(:houst) { Houst::Core.new }
@@ -32,4 +43,15 @@ Additional help can be obtained by using
       houst.hosts.should_not include("http://www.example.com")
     end
   end
+
+  context "Symlinker Class" do
+    let(:symlinker) { Symlinker.new }
+
+    it "should create a config folder into the current user's home" do
+      File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
+      Dir.should_receive(:mkdir).with("/home/johndoe/.houst").exactly(1).times
+      symlinker.create_config_folder
+    end
+  end
+
 end

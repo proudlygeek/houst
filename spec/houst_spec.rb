@@ -19,7 +19,7 @@ class Houst
   #
   def help
     base = ["Usage: houst [action] [optional parameter]"]
-    
+
     @commands.each do |command|
       base << "\t#{command[:name]}: \t#{command[:description]}"
     end
@@ -34,7 +34,7 @@ class Houst
   #
   def add(params)
     from, to = params[:from], params[:to]
-    hosts[from] = to 
+    hosts[from] = to
   end
 
   #
@@ -51,15 +51,15 @@ describe 'Houst' do
 
   context "Core Class" do
     it 'should give a list of available commands' do
-      houst.help.should == 
+      houst.help.should ==
 'Usage: houst [action] [optional parameter]
-  list:   lists all hosts
-  add:  adds a new host
-  rm:   removes an host
-  help:   displays this dialog
+	list: 	lists all hosts
+	add: 	adds a new host
+	rm: 	removes an host
+	help: 	displays this dialog
 
 Additional help can be obtained by using
-  houst help [command]
+	houst help [command]
 '
     end
 

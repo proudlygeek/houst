@@ -10,6 +10,11 @@ class Symlinker
   def create_config_folder
     Dir.mkdir @config_folder unless File.exists? @config_folder
   end
+
+  def touch_hosts_file
+    hosts_file = "#{@config_folder}/hosts"
+    File.open(hosts_file, "w") {} unless File.exists? hosts_file
+  end
 end
 
 describe 'Houst' do
@@ -47,11 +52,18 @@ Additional help can be obtained by using
   context "Symlinker Class" do
     let(:symlinker) { Symlinker.new }
 
-    it "should create a config folder into the current user's home" do
+    it 'should create a config folder into the current user\'s home' do
       File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
       Dir.should_receive(:mkdir).with("/home/johndoe/.houst").exactly(1).times
       symlinker.create_config_folder
     end
+
+    it 'should touch a new hosts file into the config folder' do
+      File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
+      File.should_receive(:open).with("/home/johndoe/.houst/hosts", "w").exactly(1).times
+      symlinker.touch_hosts_file 
+    end
+
   end
 
 end

@@ -1,6 +1,8 @@
 # Houst
 
-TODO: Write a gem description
+**Houst** is a *CLI* application for easy virtualhost management.
+
+[![Build Status](https://travis-ci.org/proudlygeek/houst.png)](https://travis-ci.org/proudlygeek/houst)
 
 ## Installation
 

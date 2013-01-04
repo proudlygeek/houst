@@ -1,38 +1,23 @@
 require 'rspec'
 require 'houst/core'
-
-class Symlinker
-
-  def initialize
-    @config_folder = "#{File.expand_path("~")}/.houst"
-  end
-
-  def create_config_folder
-    Dir.mkdir @config_folder unless File.exists? @config_folder
-  end
-
-  def touch_hosts_file
-    hosts_file = "#{@config_folder}/hosts"
-    File.open(hosts_file, "w") {} unless File.exists? hosts_file
-  end
-end
+require 'houst/symlinker'
 
 describe 'Houst' do
 
-  let(:houst) { Houst::Core.new }
-
   context "Core Class" do
+    let(:houst) { Houst::Core.new }
+
     it 'should give a list of available commands' do
       houst.help.should ==
-'Usage: houst [action] [optional parameter]
-	list: 	lists all hosts
-	add: 	adds a new host
-	rm: 	removes an host
-	help: 	displays this dialog
+      "Usage: houst [action] [optional parameter]
+       	list: 	lists all hosts
+       	add: 	adds a new host
+       	rm: 	removes an host
+       	help: 	displays this dialog
 
-Additional help can be obtained by using
-	houst help [command]
-'
+      Additional help can be obtained by using
+      	houst help [command]
+      ".gsub(/^ +/, '')
     end
 
     it 'should add a new host' do
@@ -50,7 +35,7 @@ Additional help can be obtained by using
   end
 
   context "Symlinker Class" do
-    let(:symlinker) { Symlinker.new }
+    let(:symlinker) { Houst::Symlinker.new }
 
     it 'should create a config folder into the current user\'s home' do
       File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
@@ -61,9 +46,27 @@ Additional help can be obtained by using
     it 'should touch a new hosts file into the config folder' do
       File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
       File.should_receive(:open).with("/home/johndoe/.houst/hosts", "w").exactly(1).times
-      symlinker.touch_hosts_file 
+      symlinker.touch_hosts_file
     end
 
-  end
+    it 'should sync host lines on the hosts file' do
+      hosts = {
+        '127.0.0.1'         => 'example.com',
+        '192.168.10.1'      => 'foobar.com',
+        'localhost'         => 'uselesshost.com'
+      }
 
+      expected_result = "
+          127.0.0.1	example.com
+          192.168.10.1	foobar.com
+          localhost	uselesshost.com
+      ".gsub(/^( |\n)+/, '')
+
+      file_mock = mock()
+      file_mock.should_receive(:write).with(expected_result)
+      File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
+      File.should_receive(:open).with("/home/johndoe/.houst/hosts", "w").exactly(1).times.and_return(file_mock)
+      symlinker.sync_hosts(hosts)
+    end
+  end
 end

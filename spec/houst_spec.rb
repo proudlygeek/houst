@@ -1,65 +1,32 @@
 require 'rspec'
+require 'houst/core'
 
-class Houst
-
-  attr_accessor :hosts
+class Symlinker
 
   def initialize
-    @commands = [
-      { name: "list", description: "lists all hosts" },
-      { name: "add",  description: "adds a new host" },
-      { name: "rm",   description: "removes an host" },
-      { name: "help", description: "displays this dialog" }
-    ]
-    @hosts = {}
+    @config_folder = "#{File.expand_path("~")}/.houst"
   end
 
-  #
-  # Shows the command banner usage.
-  #
-  def help
-    base = ["Usage: houst [action] [optional parameter]"]
-    
-    @commands.each do |command|
-      base << "\t#{command[:name]}: \t#{command[:description]}"
-    end
-
-    base << "\nAdditional help can be obtained by using\n\thoust help [command]\n"
-
-    base.join "\n"
-  end
-
-  #
-  # Adds an host alias to /etc/hosts.
-  #
-  def add(params)
-    from, to = params[:from], params[:to]
-    hosts[from] = to 
-  end
-
-  #
-  # Deletes an host alias from /etc/hosts.
-  #
-  def rm(hostname)
-    hosts.delete hostname
+  def create_config_folder
+    Dir.mkdir @config_folder unless File.exists? @config_folder
   end
 end
 
 describe 'Houst' do
 
-  let(:houst) { Houst.new }
+  let(:houst) { Houst::Core.new }
 
   context "Core Class" do
     it 'should give a list of available commands' do
-      houst.help.should == 
+      houst.help.should ==
 'Usage: houst [action] [optional parameter]
-  list:   lists all hosts
-  add:  adds a new host
-  rm:   removes an host
-  help:   displays this dialog
+	list: 	lists all hosts
+	add: 	adds a new host
+	rm: 	removes an host
+	help: 	displays this dialog
 
 Additional help can be obtained by using
-  houst help [command]
+	houst help [command]
 '
     end
 
@@ -76,4 +43,15 @@ Additional help can be obtained by using
       houst.hosts.should_not include("http://www.example.com")
     end
   end
+
+  context "Symlinker Class" do
+    let(:symlinker) { Symlinker.new }
+
+    it "should create a config folder into the current user's home" do
+      File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
+      Dir.should_receive(:mkdir).with("/home/johndoe/.houst").exactly(1).times
+      symlinker.create_config_folder
+    end
+  end
+
 end

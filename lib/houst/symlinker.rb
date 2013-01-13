@@ -2,6 +2,7 @@ module Houst
   class Symlinker
 
     def initialize
+      @original_hosts = "/etc/hosts"
       @config_folder = "#{File.expand_path("~")}/.houst"
       @hosts_file = "#{@config_folder}/hosts"
     end
@@ -11,7 +12,7 @@ module Houst
     end
 
     def touch_hosts_file
-      File.open(@hosts_file, "w") {} unless File.exists? @hosts_file
+      FileUtils.cp "#{@hosts_file}.orig", @hosts_file
     end
 
     def sync_hosts(hosts)
@@ -23,5 +24,14 @@ module Houst
 
       File.open(@hosts_file, 'w').write(buffer.join)
     end
+
+    def backup_original_hosts
+      FileUtils.cp @original_hosts, "#{@config_folder}/hosts.orig"
+    end
+
+    def symlink_hosts
+      FileUtils.ln_s @hosts_file, @original_hosts, :force => true
+    end
+
   end
 end

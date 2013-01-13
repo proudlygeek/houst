@@ -37,16 +37,28 @@ describe 'Houst' do
   context "Symlinker Class" do
     let(:symlinker) { Houst::Symlinker.new }
 
-    it 'should create a config folder into the current user\'s home' do
+    before :each do
       File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
+    end
+
+    it 'should create a config folder into the current user\'s home' do
       Dir.should_receive(:mkdir).with("/home/johndoe/.houst").exactly(1).times
       symlinker.create_config_folder
     end
 
-    it 'should touch a new hosts file into the config folder' do
-      File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
-      File.should_receive(:open).with("/home/johndoe/.houst/hosts", "w").exactly(1).times
+    it 'should backup the original hosts file into the config folder' do
+      FileUtils.should_receive(:cp).with("/etc/hosts", "/home/johndoe/.houst/hosts.orig").exactly(1).times
+      symlinker.backup_original_hosts
+    end
+
+    it 'should touch a new hosts file into the config folder with the contents of the backupped hosts file' do
+      FileUtils.should_receive(:cp).with("/home/johndoe/.houst/hosts.orig", "/home/johndoe/.houst/hosts" ).exactly(1).times
       symlinker.touch_hosts_file
+    end
+
+    it 'should symlink the hosts file with /etc/hosts' do
+      FileUtils.should_receive(:ln_s).with("/home/johndoe/.houst/hosts", "/etc/hosts", {:force => true}).exactly(1).times
+      symlinker.symlink_hosts
     end
 
     it 'should sync host lines on the hosts file' do
@@ -64,9 +76,9 @@ describe 'Houst' do
 
       file_mock = mock()
       file_mock.should_receive(:write).with(expected_result)
-      File.should_receive(:expand_path).exactly(1).times.and_return("/home/johndoe")
       File.should_receive(:open).with("/home/johndoe/.houst/hosts", "w").exactly(1).times.and_return(file_mock)
       symlinker.sync_hosts(hosts)
     end
+
   end
 end

@@ -2,9 +2,6 @@
 
 **Houst** is a *CLI* application for easy virtualhost management.
 
-[![Build Status](https://travis-ci.org/proudlygeek/houst.png)](https://travis-ci.org/proudlygeek/houst)
-[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/proudlygeek/houst)
-
 ## Installation
 
 Add this line to your application's Gemfile:

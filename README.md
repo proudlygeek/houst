@@ -1,4 +1,4 @@
-# Houst
+# Houst [![Build Status](https://travis-ci.org/proudlygeek/houst.png)](https://travis-ci.org/proudlygeek/houst) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/proudlygeek/houst)
 
 **Houst** is a *CLI* application for easy virtualhost management.
 

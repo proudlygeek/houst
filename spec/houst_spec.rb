@@ -1,6 +1,7 @@
 require 'rspec'
 require 'houst/core'
 require 'houst/symlinker'
+require 'houst/cli'
 
 describe 'Houst' do
 
@@ -18,6 +19,19 @@ describe 'Houst' do
       Additional help can be obtained by using
       	houst help [command]
       ".gsub(/^ +/, '')
+    end
+
+    it 'should lists all the hosts' do
+      houst.hosts = {
+        "http://www.example1.com" => "127.0.0.1",
+        "http://www.example2.com" => "192.168.1.1",
+        "http://www.example3.com" => "33.33.33.33"
+      }
+      houst.list.should == "
+          http://www.example1.com		127.0.0.1
+          http://www.example2.com		192.168.1.1
+          http://www.example3.com		33.33.33.33
+      ".gsub(/^( |\n)+/, '')
     end
 
     it 'should add a new host' do
@@ -62,22 +76,47 @@ describe 'Houst' do
     end
 
     it 'should sync host lines on the hosts file' do
+      # todo: hosts are not in this format. Fix it!
       hosts = {
         '127.0.0.1'         => 'example.com',
-        '192.168.10.1'      => 'foobar.com',
+        '192.168.1.1'      => 'foobar.com',
         'localhost'         => 'uselesshost.com'
       }
 
       expected_result = "
-          127.0.0.1	example.com
-          192.168.10.1	foobar.com
-          localhost	uselesshost.com
+          127.0.0.1		example.com
+          192.168.1.1		foobar.com
+          localhost		uselesshost.com
       ".gsub(/^( |\n)+/, '')
 
       file_mock = mock()
       file_mock.should_receive(:write).with(expected_result)
       File.should_receive(:open).with("/home/johndoe/.houst/hosts", "w").exactly(1).times.and_return(file_mock)
       symlinker.sync_hosts(hosts)
+    end
+  end
+
+  context "CLI Class" do
+
+    let(:core) { Houst::Core.new }
+    let(:stdout_mock) { mock(STDOUT) }
+    let(:cli) { Houst::CLI.new(core, stdout_mock) }
+
+    it 'should show the help banner with argument "help"' do
+      help_banner = core.send(:help)
+      stdout_mock.should_receive(:write).with(help_banner)
+      ARGV.clear
+      ARGV << "help"
+      cli.run
+    end
+
+    context "Empty hosts" do
+      it 'should suggest to add an hosts if asked to give a list with argument "list"' do
+        stdout_mock.should_receive(:write).with("No custom hosts found.\nYou can add some using:\n\thoust add [alias] [address]\n")
+        ARGV.clear
+        ARGV << "list"
+        cli.run
+      end
     end
 
   end

@@ -1,5 +1,8 @@
+require 'houst/utils'
+
 module Houst
   class Core
+    include Utils
     attr_accessor :hosts
 
     def initialize
@@ -25,6 +28,17 @@ module Houst
       base << "\nAdditional help can be obtained by using\n\thoust help [command]\n"
 
       base.join "\n"
+    end
+
+    #
+    # Shows a list of the hosts
+    #
+    def list
+      unless hosts.empty?
+        format hosts
+      else
+        "No custom hosts found.\nYou can add some using:\n\thoust add [alias] [address]\n"
+      end
     end
 
     #

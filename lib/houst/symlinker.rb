@@ -1,5 +1,8 @@
+require "houst/utils"
+
 module Houst
   class Symlinker
+    include Utils
 
     def initialize
       @original_hosts = "/etc/hosts"
@@ -16,13 +19,7 @@ module Houst
     end
 
     def sync_hosts(hosts)
-      buffer = []
-
-      hosts.each do |from, to|
-       buffer << "#{from}	#{to}\n"
-      end
-
-      File.open(@hosts_file, 'w').write(buffer.join)
+      File.open(@hosts_file, 'w').write(format(hosts))
     end
 
     def backup_original_hosts

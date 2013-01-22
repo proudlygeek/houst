@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+require 'houst'
+Houst::CLI.new(Houst::Core.new, STDOUT).run
